@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>VOID PROTOCOL — Beyond the Rift</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="icon" href="data:;base64,iVBORw0kGgo=">
+</head>
+<body>
+
+<!-- ═══════════════════ TITLE ═══════════════════ -->
+<div id="screen-title" class="screen active">
+  <canvas id="title-bg"></canvas>
+  <div class="scanlines"></div>
+  <div class="title-wrap">
+    <div class="title-eyebrow">// CLASSIFIED OPERATION //</div>
+    <div class="title-logo">VOID<span class="title-accent">PROTOCOL</span></div>
+    <div class="title-tagline">BEYOND THE RIFT</div>
+    <div class="title-lore">Year 2247. The Rift — a tear in spacetime — has opened beyond the Outer Belt.<br>
+    Ancient machine intelligence pours through. You are the last Phantom-class pilot.<br>
+    <em>Close the Rift. Silence the void.</em></div>
+    <div class="title-menu">
+      <button class="tmenu-btn active" id="btn-newgame">[ NEW GAME ]</button>
+      <button class="tmenu-btn" id="btn-continue" disabled>[ CONTINUE ]</button>
+      <button class="tmenu-btn" id="btn-hangar">[ HANGAR ]</button>
+      <button class="tmenu-btn" id="btn-archives">[ ARCHIVES ]</button>
+      <button class="tmenu-btn" id="btn-controls-title">[ CONTROLS ]</button>
+    </div>
+    <div class="title-version">v2.0 — ENGINE: CANVAS2D+WEBAUDIO — SOLO PILOT EDITION</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HANGAR (ship select / upgrades) ═══════════════════ -->
+<div id="screen-hangar" class="screen">
+  <div class="hangar-wrap">
+    <div class="hangar-title">// PHANTOM HANGAR //</div>
+    <div class="hangar-layout">
+      <div class="hangar-ships" id="ship-list"></div>
+      <div class="hangar-preview">
+        <canvas id="ship-preview-canvas" width="320" height="320"></canvas>
+        <div class="ship-info" id="ship-info"></div>
+      </div>
+      <div class="hangar-upgrades">
+        <div class="upgrade-title">SKILL TREE</div>
+        <div id="skill-tree-ui"></div>
+        <div class="currency-display">CREDITS: <span id="val-credits">0</span></div>
+      </div>
+    </div>
+    <div class="hangar-footer">
+      <button class="btn-primary" id="btn-hangar-launch">[ LAUNCH ]</button>
+      <button class="btn-secondary" id="btn-hangar-back">[ BACK ]</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ARCHIVES (logs + achievements) ═══════════════════ -->
+<div id="screen-archives" class="screen">
+  <div class="archives-wrap">
+    <div class="archives-title">// VOID ARCHIVES //</div>
+    <div class="archives-tabs">
+      <button class="tab-btn active" data-tab="logs">DATA LOGS</button>
+      <button class="tab-btn" data-tab="achievements">ACHIEVEMENTS</button>
+      <button class="tab-btn" data-tab="stats">PILOT STATS</button>
+    </div>
+    <div class="archives-content" id="archives-content"></div>
+    <button class="btn-secondary" id="btn-archives-back">[ BACK ]</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ CUTSCENE ═══════════════════ -->
+<div id="screen-cutscene" class="screen">
+  <canvas id="cutscene-canvas"></canvas>
+  <div class="cutscene-bars">
+    <div class="cbar top"></div>
+    <div class="cbar bottom"></div>
+  </div>
+  <div id="cutscene-subtitle"></div>
+  <div class="cutscene-skip">[ SPACE / CLICK — SKIP ]</div>
+</div>
+
+<!-- ═══════════════════ GAME ═══════════════════ -->
+<div id="screen-game" class="screen">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- TOP HUD -->
+  <div id="hud-top">
+    <div id="hud-left-block">
+      <div class="hud-ship-name" id="hud-ship-name">PHANTOM-X</div>
+      <div class="hud-row">
+        <span class="hl">HULL</span>
+        <div class="bar-track"><div class="bar-fill" id="bar-hull"></div></div>
+        <span class="hv" id="val-hull">100</span>
+      </div>
+      <div class="hud-row">
+        <span class="hl">SHIELD</span>
+        <div class="bar-track"><div class="bar-fill shield-fill" id="bar-shield"></div></div>
+        <span class="hv" id="val-shield">0</span>
+      </div>
+      <div class="hud-row">
+        <span class="hl">BOOST</span>
+        <div class="bar-track"><div class="bar-fill boost-fill" id="bar-boost"></div></div>
+      </div>
+    </div>
+    <div id="hud-center-block">
+      <div class="hud-zone" id="hud-zone">ZONE 1 — OUTER BELT</div>
+      <div class="hud-objective" id="hud-objective">—</div>
+      <div class="hud-combo" id="hud-combo" style="display:none">COMBO ×<span id="val-combo">1</span></div>
+    </div>
+    <div id="hud-right-block">
+      <div class="hud-score">SCORE <span id="val-score">0</span></div>
+      <div class="hud-credits">¢ <span id="val-credits-hud">0</span></div>
+      <div class="hud-kills">KILLS <span id="val-kills">0</span></div>
+      <div class="hud-time">TIME <span id="val-time">0:00</span></div>
+    </div>
+  </div>
+
+  <!-- WEAPON HUD (bottom center) -->
+  <div id="weapon-hud">
+    <div id="weapon-slots" class="weapon-slots"></div>
+    <div id="overheat-bar-wrap">
+      <span class="hl">HEAT</span>
+      <div class="bar-track heat-track"><div class="bar-fill heat-fill" id="bar-heat"></div></div>
+      <span id="val-overheat-state"></span>
+    </div>
+  </div>
+
+  <!-- BOSS BAR -->
+  <div id="boss-bar-wrap" style="display:none">
+    <div id="boss-bar-title">BOSS</div>
+    <div id="boss-bar-outer">
+      <div id="boss-bar-inner"></div>
+      <div class="boss-phase-markers" id="boss-phase-markers"></div>
+    </div>
+    <div id="boss-bar-phase-label"></div>
+  </div>
+
+  <!-- MESSAGE CENTER -->
+  <div id="center-msg" style="display:none"></div>
+
+  <!-- MINIMAP -->
+  <canvas id="minimap" width="160" height="120"></canvas>
+
+  <!-- STORY POPUP -->
+  <div id="story-box" style="display:none">
+    <div class="story-box-header" id="sb-header"></div>
+    <div class="story-box-body" id="sb-body"></div>
+    <div class="story-box-close">[E / CLICK — CLOSE]</div>
+  </div>
+
+  <!-- TRANSMISSION POPUP -->
+  <div id="transmission-box" style="display:none">
+    <div class="tx-header">// INCOMING TRANSMISSION //</div>
+    <div class="tx-sender" id="tx-sender"></div>
+    <div class="tx-body" id="tx-body"></div>
+  </div>
+
+  <!-- ACHIEVEMENT TOAST -->
+  <div id="achievement-toast" style="display:none">
+    <div class="ach-icon">🏆</div>
+    <div class="ach-info">
+      <div class="ach-label">ACHIEVEMENT UNLOCKED</div>
+      <div class="ach-name" id="ach-name-toast"></div>
+    </div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="pause-overlay" style="display:none">
+    <div class="pause-title">// PAUSED //</div>
+    <button class="btn-primary" id="btn-resume">[ RESUME ]</button>
+    <button class="btn-secondary" id="btn-pause-hangar">[ HANGAR ]</button>
+    <button class="btn-secondary" id="btn-quit-menu">[ MAIN MENU ]</button>
+  </div>
+
+  <!-- LOW HEALTH WARNING overlay -->
+  <div id="low-health-overlay" style="display:none"></div>
+
+  <!-- WARP TRANSITION -->
+  <div id="warp-overlay" style="display:none"></div>
+</div>
+
+<!-- ═══════════════════ GAME OVER ═══════════════════ -->
+<div id="screen-gameover" class="screen">
+  <div class="go-wrap">
+    <div class="go-title" id="go-title">SIGNAL LOST</div>
+    <div class="go-subtitle" id="go-subtitle">PHANTOM WING — OFFLINE</div>
+    <div class="go-stats" id="go-stats"></div>
+    <div class="go-lore" id="go-lore"></div>
+    <div class="go-buttons">
+      <button class="btn-primary" id="btn-retry">[ RETRY ZONE ]</button>
+      <button class="btn-secondary" id="btn-go-menu">[ MAIN MENU ]</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ JS — Load order matters ══ -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/input.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/save.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/environment.js"></script>
+<script src="js/weapons.js"></script>
+<script src="js/player.js"></script>
+<script src="js/enemy.js"></script>
+<script src="js/boss.js"></script>
+<script src="js/missions.js"></script>
+<script src="js/story.js"></script>
+<script src="js/skillTree.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/level.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+<script src="js/collision.js"></script>
+</body>
+</html>
